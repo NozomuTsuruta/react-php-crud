@@ -1,10 +1,147 @@
-import styled from 'styled-components'
+import React, { useState } from 'react';
+import axios from 'axios';
+import {
+  Button,
+  CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  styled,
+  TextField,
+} from '@material-ui/core';
+import DeleteIcon from '@material-ui/icons/Delete';
+import EditIcon from '@material-ui/icons/Edit';
+import { useForm } from 'react-hook-form';
 
-const Title = styled.h1`
-  color: red;
-  font-size: 50px;
-`
+type FormData = {
+  title: string;
+  text: string;
+  id: number;
+};
 
 export default function Home() {
-  return <Title>My page</Title>
+  const [todos, setTodos] = useState<FormData[]>([]);
+  const [open, setOpen] = useState(false);
+  const [edit, setEdit] = useState<FormData>();
+
+  const {
+    register,
+    handleSubmit,
+    errors,
+    formState: { isSubmitting },
+  } = useForm<FormData>();
+
+  const onSubmit = async (data: FormData) => {
+    try {
+      // const res = await axios.post('http://localhost:8080/index.php', data);
+      setTodos((todos) => [...todos, data]);
+    } catch {
+      alert('通信に失敗しました。');
+    }
+  };
+
+  const inputList = [
+    {
+      name: 'title',
+      error: errors.title?.message,
+    },
+    {
+      name: 'text',
+      error: errors.text?.message,
+    },
+  ];
+
+  const deleteTodo = (id: number) => {
+    setTodos((todos) => todos.filter((_, i) => i !== id));
+  };
+
+  const onEdit = (data: FormData) => {
+    setTodos((todos) => todos.map((todo, i) => (i === edit?.id ? data : todo)));
+  };
+
+  return (
+    <>
+      <Form onSubmit={handleSubmit(onSubmit)}>
+        {inputList.map(({ name, error }) => (
+          <TextField
+            defaultValue=""
+            margin="normal"
+            variant="outlined"
+            name={name}
+            error={!!error}
+            inputRef={register({ required: '入力してください。' })}
+            helperText={error}
+          />
+        ))}
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? <CircularProgress size={24} /> : '送信'}
+        </Button>
+      </Form>
+      <List>
+        {todos.map(({ title, text }, i) => (
+          <ListItem key={title}>
+            <ListItemText primary={title} secondary={text} />
+            <IconButton
+              onClick={() => {
+                setEdit({ id: i, title, text });
+                setOpen(true);
+              }}
+            >
+              <EditIcon />
+            </IconButton>
+            <IconButton onClick={() => deleteTodo(i)}>
+              <DeleteIcon />
+            </IconButton>
+          </ListItem>
+        ))}
+      </List>
+      <Dialog open={open} onClose={() => setOpen(false)}>
+        <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
+        <Form onSubmit={handleSubmit(onEdit)}>
+          <DialogContent>
+            {inputList.map(({ name, error }) => (
+              <TextField
+                defaultValue={name === 'title' ? edit?.title : edit?.text}
+                margin="normal"
+                variant="outlined"
+                name={name}
+                error={!!error}
+                inputRef={register({ required: '入力してください。' })}
+                helperText={error}
+              />
+            ))}
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setOpen(false)} color="primary">
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              onClick={() => setOpen(false)}
+              color="primary"
+            >
+              Subscribe
+            </Button>
+          </DialogActions>
+        </Form>
+      </Dialog>
+    </>
+  );
 }
+
+const Form = styled('form')({
+  display: 'flex',
+  flexDirection: 'column',
+  width: 300,
+  margin: '0 auto',
+});
