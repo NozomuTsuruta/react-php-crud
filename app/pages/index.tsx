@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import {
   Button,
@@ -13,6 +13,7 @@ import {
   ListItemText,
   styled,
   TextField,
+  Typography,
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
@@ -36,9 +37,16 @@ export default function Home() {
     formState: { isSubmitting },
   } = useForm<FormData>();
 
+  useEffect(() => {
+    (async () => {
+      const res = await axios.get('http://localhost/read.php');
+      setTodos(res.data.todos);
+    })();
+  }, []);
+
   const onSubmit = async (data: FormData) => {
     try {
-      // const res = await axios.post('http://localhost:8080/index.php', data);
+      await axios.post('http://localhost/insert.php', data);
       setTodos((todos) => [...todos, data]);
     } catch {
       alert('通信に失敗しました。');
@@ -66,6 +74,7 @@ export default function Home() {
 
   return (
     <>
+      <Typography align="center">TODO APP</Typography>
       <Form onSubmit={handleSubmit(onSubmit)}>
         {inputList.map(({ name, error }) => (
           <TextField
@@ -74,8 +83,10 @@ export default function Home() {
             variant="outlined"
             name={name}
             error={!!error}
+            label={name}
             inputRef={register({ required: '入力してください。' })}
             helperText={error}
+            key={name}
           />
         ))}
         <Button
@@ -118,6 +129,7 @@ export default function Home() {
                 error={!!error}
                 inputRef={register({ required: '入力してください。' })}
                 helperText={error}
+                key={name}
               />
             ))}
           </DialogContent>
