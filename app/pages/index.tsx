@@ -65,11 +65,21 @@ export default function Home() {
   ];
 
   const deleteTodo = (id: number) => {
-    setTodos((todos) => todos.filter((_, i) => i !== id));
+    setTodos((todos) => todos.filter((todo) => todo.id !== id));
   };
 
-  const onEdit = (data: FormData) => {
-    setTodos((todos) => todos.map((todo, i) => (i === edit?.id ? data : todo)));
+  const onEdit = async (data: FormData) => {
+    try {
+      await axios.post('http://localhost/update.php', {
+        ...data,
+        id: edit?.id,
+      });
+      setTodos((todos) =>
+        todos.map((todo) => (todo.id === edit?.id ? data : todo))
+      );
+    } catch {
+      alert('通信に失敗しました。');
+    }
   };
 
   return (
@@ -99,18 +109,18 @@ export default function Home() {
         </Button>
       </Form>
       <List>
-        {todos.map(({ title, text }, i) => (
-          <ListItem key={title}>
+        {todos?.map(({ title, text, id }) => (
+          <ListItem key={id}>
             <ListItemText primary={title} secondary={text} />
             <IconButton
               onClick={() => {
-                setEdit({ id: i, title, text });
+                setEdit({ id, title, text });
                 setOpen(true);
               }}
             >
               <EditIcon />
             </IconButton>
-            <IconButton onClick={() => deleteTodo(i)}>
+            <IconButton onClick={() => deleteTodo(id)}>
               <DeleteIcon />
             </IconButton>
           </ListItem>

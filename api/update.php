@@ -7,7 +7,7 @@ require_once 'db_connection.php';
 
 $data = json_decode(file_get_contents('php://input'));
 
-if (isset($data->title)) {
-    $insert = $db->prepare('INSERT INTO todos SET title=?,text=?');
-    $insert->execute([$data->title, $data->text]);
+if (isset($data->id)) {
+    $update = $db->prepare('UPDATE todos SET title=?,text=? WHERE id=?');
+    $update->execute([$data->title, $data->text, $data->id]);
 }
