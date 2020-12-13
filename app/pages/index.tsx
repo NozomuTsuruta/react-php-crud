@@ -19,8 +19,9 @@ import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import { useForm } from 'react-hook-form';
 import { GetStaticProps } from 'next';
+import { useRouter } from 'next/dist/client/router';
 
-type FormData = {
+export type FormData = {
   title: string;
   text: string;
   id: number;
@@ -30,6 +31,7 @@ export default function Home({ init }: { init: FormData[] }) {
   const [todos, setTodos] = useState<FormData[]>(init);
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<FormData>();
+  const router = useRouter();
 
   const {
     register,
@@ -115,8 +117,9 @@ export default function Home({ init }: { init: FormData[] }) {
             <ListItemText primary={title} secondary={text} />
             <IconButton
               onClick={() => {
-                setEdit({ id, title, text });
-                setOpen(true);
+                // setEdit({ id, title, text });
+                // setOpen(true);
+                router.push(`/${id}`);
               }}
             >
               <EditIcon />
