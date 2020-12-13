@@ -6,6 +6,9 @@ import { theme } from '../utils';
 import { ThemeProvider as MaterialUIThemeProvider } from '@material-ui/core/styles';
 import { StylesProvider } from '@material-ui/styles';
 import CssBaseline from '@material-ui/core/CssBaseline';
+import axios from 'axios';
+
+axios.defaults.baseURL = 'http://localhost';
 
 /**
  * クライアント側のレンダリングカスタマイズ

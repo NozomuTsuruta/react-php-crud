@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
 import {
   Button,
@@ -18,6 +18,7 @@ import {
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import { useForm } from 'react-hook-form';
+import { GetStaticProps } from 'next';
 
 type FormData = {
   title: string;
@@ -25,8 +26,8 @@ type FormData = {
   id: number;
 };
 
-export default function Home() {
-  const [todos, setTodos] = useState<FormData[]>([]);
+export default function Home({ init }: { init: FormData[] }) {
+  const [todos, setTodos] = useState<FormData[]>(init);
   const [open, setOpen] = useState(false);
   const [edit, setEdit] = useState<FormData>();
 
@@ -37,16 +38,9 @@ export default function Home() {
     formState: { isSubmitting },
   } = useForm<FormData>();
 
-  useEffect(() => {
-    (async () => {
-      const res = await axios.get('http://localhost/read.php');
-      setTodos(res.data.todos);
-    })();
-  }, []);
-
   const onSubmit = async (data: FormData) => {
     try {
-      await axios.post('http://localhost/insert.php', data);
+      await axios.post('/insert.php', data);
       setTodos((todos) => [...todos, data]);
     } catch {
       alert('通信に失敗しました。');
@@ -67,7 +61,7 @@ export default function Home() {
   const deleteTodo = async (id: number) => {
     if (confirm('本当に削除しますか？')) {
       try {
-        await axios.post('http://localhost/delete.php', id);
+        await axios.post('/delete.php', id);
         setTodos((todos) => todos.filter((todo) => todo.id !== id));
       } catch {
         alert('通信に失敗しました。');
@@ -77,7 +71,7 @@ export default function Home() {
 
   const onEdit = async (data: FormData) => {
     try {
-      await axios.post('http://localhost/update.php', {
+      await axios.post('/update.php', {
         ...data,
         id: edit?.id,
       });
@@ -174,3 +168,13 @@ const Form = styled('form')({
   width: 300,
   margin: '0 auto',
 });
+
+export const getStaticProps: GetStaticProps = async () => {
+  const res = await axios.get('/read_all.php');
+
+  return {
+    props: {
+      init: res.data,
+    },
+  };
+};
