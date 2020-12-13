@@ -64,8 +64,15 @@ export default function Home() {
     },
   ];
 
-  const deleteTodo = (id: number) => {
-    setTodos((todos) => todos.filter((todo) => todo.id !== id));
+  const deleteTodo = async (id: number) => {
+    if (confirm('本当に削除しますか？')) {
+      try {
+        await axios.post('http://localhost/delete.php', id);
+        setTodos((todos) => todos.filter((todo) => todo.id !== id));
+      } catch {
+        alert('通信に失敗しました。');
+      }
+    }
   };
 
   const onEdit = async (data: FormData) => {
