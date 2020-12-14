@@ -6,6 +6,6 @@ require_once 'db_connection.php';
 
 $data = $db->prepare('SELECT * FROM todos WHERE id=?');
 $data->execute([$_GET['id']]);
-$data->fetch(PDO::FETCH_ASSOC);
+$result = $data->fetch(PDO::FETCH_ASSOC);
 
-echo json_encode($data);
+echo json_encode($result);

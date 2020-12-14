@@ -119,7 +119,7 @@ export default function Home({ init }: { init: FormData[] }) {
               onClick={() => {
                 // setEdit({ id, title, text });
                 // setOpen(true);
-                router.push(`/${id}`);
+                router.push(`/posts/${id}`);
               }}
             >
               <EditIcon />
