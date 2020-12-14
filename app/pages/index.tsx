@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import {
+  Grid,
   IconButton,
   List,
   ListItem,
@@ -13,6 +14,7 @@ import { useForm } from 'react-hook-form';
 import { GetStaticProps } from 'next';
 import Link from 'next/link';
 import { Form } from '../components/Form';
+import { styled } from '@material-ui/styles';
 
 export type FormData = {
   title: string;
@@ -28,12 +30,14 @@ export default function Home({ init }: { init: FormData[] }) {
     handleSubmit,
     errors,
     formState: { isSubmitting },
+    reset,
   } = useForm<FormData>();
 
   const onSubmit = async (data: FormData) => {
     try {
       const res = await axios.post('/insert.php', data);
       setTodos(res.data);
+      reset();
     } catch {
       alert('通信に失敗しました。');
     }
@@ -43,7 +47,7 @@ export default function Home({ init }: { init: FormData[] }) {
     if (!confirm('本当に削除しますか？')) return;
     try {
       const res = await axios.post('/delete.php', id);
-      console.log(res.data)
+      console.log(res.data);
       setTodos(res.data);
     } catch {
       alert('通信に失敗しました。');
@@ -62,30 +66,36 @@ export default function Home({ init }: { init: FormData[] }) {
   ];
 
   return (
-    <>
-      <Typography align="center">TODO APP</Typography>
-      <Form
-        inputList={inputList}
-        handleSubmit={handleSubmit(onSubmit)}
-        register={register}
-        isSubmitting={isSubmitting}
-      />
-      <List>
-        {todos?.map(({ title, text, id }) => (
-          <ListItem key={id}>
-            <ListItemText primary={title} secondary={text} />
-            <Link href={`/posts/${id}`}>
-              <IconButton>
-                <EditIcon />
+    <StyledGrid container justify="center" spacing={2}>
+      <Typography component="h1" variant="h3" align="center">
+        TODO
+      </Typography>
+      <Grid item sm={6} xs={10}>
+        <Form
+          inputList={inputList}
+          handleSubmit={handleSubmit(onSubmit)}
+          register={register}
+          isSubmitting={isSubmitting}
+        />
+      </Grid>
+      <Grid item sm={4} xs={10}>
+        <List>
+          {todos?.map(({ title, text, id }) => (
+            <ListItem key={id}>
+              <ListItemText primary={title} secondary={text} />
+              <Link href={`/posts/${id}`}>
+                <IconButton>
+                  <EditIcon />
+                </IconButton>
+              </Link>
+              <IconButton onClick={() => deleteTodo(id)}>
+                <DeleteIcon />
               </IconButton>
-            </Link>
-            <IconButton onClick={() => deleteTodo(id)}>
-              <DeleteIcon />
-            </IconButton>
-          </ListItem>
-        ))}
-      </List>
-    </>
+            </ListItem>
+          ))}
+        </List>
+      </Grid>
+    </StyledGrid>
   );
 }
 
@@ -98,3 +108,7 @@ export const getStaticProps: GetStaticProps = async () => {
     },
   };
 };
+
+const StyledGrid = styled(Grid)({
+  marginTop: 10,
+})

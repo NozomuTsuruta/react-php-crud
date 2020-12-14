@@ -31,16 +31,19 @@ export const Form: React.FC<Props> = ({
           inputRef={register({ required: '入力してください。' })}
           helperText={error}
           key={name}
+          InputLabelProps={{
+            shrink: true,
+          }}
         />
       ))}
-      <Button
+      <StyledButton
         type="submit"
         variant="contained"
         color="primary"
         disabled={isSubmitting}
       >
-        {isSubmitting ? <CircularProgress size={24} /> : '送信'}
-      </Button>
+        {isSubmitting ? <CircularProgress size={24} /> : '登録'}
+      </StyledButton>
     </StyledForm>
   );
 };
@@ -48,6 +51,10 @@ export const Form: React.FC<Props> = ({
 const StyledForm = styled('form')({
   display: 'flex',
   flexDirection: 'column',
-  width: 300,
+  width: 280,
   margin: '0 auto',
+});
+
+const StyledButton = styled(Button)({
+  marginTop: 10,
 });
