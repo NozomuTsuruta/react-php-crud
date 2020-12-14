@@ -10,4 +10,6 @@ $data = json_decode(file_get_contents('php://input'));
 if (isset($data->title)) {
     $insert = $db->prepare('INSERT INTO todos SET title=?,text=?');
     $insert->execute([$data->title, $data->text]);
+    $result = $db->query('SELECT * FROM todos')->fetchAll(PDO::FETCH_ASSOC);
+    echo json_encode($result);
 }

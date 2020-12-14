@@ -4,6 +4,6 @@ header('Access-Control-Allow-Methods: GET');
 
 require_once 'db_connection.php';
 
-$data = $db->query('SELECT * FROM todos')->fetchAll(PDO::FETCH_ASSOC);
+$result = $db->query('SELECT * FROM todos')->fetchAll(PDO::FETCH_ASSOC);
 
-echo json_encode($data);
+echo json_encode($result);

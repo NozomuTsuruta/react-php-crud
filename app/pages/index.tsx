@@ -1,25 +1,18 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import {
-  Button,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   List,
   ListItem,
   ListItemText,
-  styled,
-  TextField,
   Typography,
 } from '@material-ui/core';
 import DeleteIcon from '@material-ui/icons/Delete';
 import EditIcon from '@material-ui/icons/Edit';
 import { useForm } from 'react-hook-form';
 import { GetStaticProps } from 'next';
-import { useRouter } from 'next/dist/client/router';
+import Link from 'next/link';
+import { Form } from '../components/Form';
 
 export type FormData = {
   title: string;
@@ -29,9 +22,6 @@ export type FormData = {
 
 export default function Home({ init }: { init: FormData[] }) {
   const [todos, setTodos] = useState<FormData[]>(init);
-  const [open, setOpen] = useState(false);
-  const [edit, setEdit] = useState<FormData>();
-  const router = useRouter();
 
   const {
     register,
@@ -42,8 +32,19 @@ export default function Home({ init }: { init: FormData[] }) {
 
   const onSubmit = async (data: FormData) => {
     try {
-      await axios.post('/insert.php', data);
-      setTodos((todos) => [...todos, data]);
+      const res = await axios.post('/insert.php', data);
+      setTodos(res.data);
+    } catch {
+      alert('通信に失敗しました。');
+    }
+  };
+
+  const deleteTodo = async (id: number) => {
+    if (!confirm('本当に削除しますか？')) return;
+    try {
+      const res = await axios.post('/delete.php', id);
+      console.log(res.data)
+      setTodos(res.data);
     } catch {
       alert('通信に失敗しました。');
     }
@@ -60,117 +61,33 @@ export default function Home({ init }: { init: FormData[] }) {
     },
   ];
 
-  const deleteTodo = async (id: number) => {
-    if (confirm('本当に削除しますか？')) {
-      try {
-        await axios.post('/delete.php', id);
-        setTodos((todos) => todos.filter((todo) => todo.id !== id));
-      } catch {
-        alert('通信に失敗しました。');
-      }
-    }
-  };
-
-  const onEdit = async (data: FormData) => {
-    try {
-      await axios.post('/update.php', {
-        ...data,
-        id: edit?.id,
-      });
-      setTodos((todos) =>
-        todos.map((todo) => (todo.id === edit?.id ? data : todo))
-      );
-    } catch {
-      alert('通信に失敗しました。');
-    }
-  };
-
   return (
     <>
       <Typography align="center">TODO APP</Typography>
-      <Form onSubmit={handleSubmit(onSubmit)}>
-        {inputList.map(({ name, error }) => (
-          <TextField
-            defaultValue=""
-            margin="normal"
-            variant="outlined"
-            name={name}
-            error={!!error}
-            label={name}
-            inputRef={register({ required: '入力してください。' })}
-            helperText={error}
-            key={name}
-          />
-        ))}
-        <Button
-          type="submit"
-          variant="contained"
-          color="primary"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? <CircularProgress size={24} /> : '送信'}
-        </Button>
-      </Form>
+      <Form
+        inputList={inputList}
+        handleSubmit={handleSubmit(onSubmit)}
+        register={register}
+        isSubmitting={isSubmitting}
+      />
       <List>
         {todos?.map(({ title, text, id }) => (
           <ListItem key={id}>
             <ListItemText primary={title} secondary={text} />
-            <IconButton
-              onClick={() => {
-                // setEdit({ id, title, text });
-                // setOpen(true);
-                router.push(`/posts/${id}`);
-              }}
-            >
-              <EditIcon />
-            </IconButton>
+            <Link href={`/posts/${id}`}>
+              <IconButton>
+                <EditIcon />
+              </IconButton>
+            </Link>
             <IconButton onClick={() => deleteTodo(id)}>
               <DeleteIcon />
             </IconButton>
           </ListItem>
         ))}
       </List>
-      <Dialog open={open} onClose={() => setOpen(false)}>
-        <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
-        <Form onSubmit={handleSubmit(onEdit)}>
-          <DialogContent>
-            {inputList.map(({ name, error }) => (
-              <TextField
-                defaultValue={name === 'title' ? edit?.title : edit?.text}
-                margin="normal"
-                variant="outlined"
-                name={name}
-                error={!!error}
-                inputRef={register({ required: '入力してください。' })}
-                helperText={error}
-                key={name}
-              />
-            ))}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setOpen(false)} color="primary">
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              onClick={() => setOpen(false)}
-              color="primary"
-            >
-              Subscribe
-            </Button>
-          </DialogActions>
-        </Form>
-      </Dialog>
     </>
   );
 }
-
-const Form = styled('form')({
-  display: 'flex',
-  flexDirection: 'column',
-  width: 300,
-  margin: '0 auto',
-});
 
 export const getStaticProps: GetStaticProps = async () => {
   const res = await axios.get('/read_all.php');
